@@ -29,8 +29,11 @@ import WorkoutDetail from './pages/WorkoutDetail';
 import Sleep from './pages/Sleep';
 import Nutrition from './pages/Nutrition';
 import Activity from './pages/Activity';
+import Mood from './pages/Mood';
 import CyclePhaseDetail from './pages/CyclePhaseDetail';
 import CreateRoutine from './pages/CreateRoutine';
+import Recipes from './pages/Recipes';
+import AddRecipe from './pages/AddRecipe';
 import { LogIn, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -59,12 +62,14 @@ export default function App() {
               <Route path="/health/sleep" element={<Sleep />} />
               <Route path="/health/nutrition" element={<Nutrition />} />
               <Route path="/health/activity" element={<Activity />} />
+              <Route path="/health/mood" element={<Mood />} />
               <Route path="/add-meal" element={<AddMeal />} />
               <Route path="/assign-meal" element={<AssignMeal />} />
               <Route path="/shopping-list" element={<ShoppingList />} />
               <Route path="/add-workout" element={<AddWorkout />} />
               <Route path="/assign-workout" element={<AssignWorkout />} />
-              <Route path="/recipes" element={<div className="p-6"><h1>Recipes Page</h1><p>Coming soon!</p></div>} />
+              <Route path="/recipes" element={<Recipes />} />
+              <Route path="/add-recipe" element={<AddRecipe />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

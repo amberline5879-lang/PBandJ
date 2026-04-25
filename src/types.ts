@@ -97,6 +97,22 @@ export interface Meal {
   photo?: string;
 }
 
+export interface Recipe {
+  id: string;
+  uid: string;
+  name: string;
+  category?: string;
+  ingredients: string[];
+  instructions: string;
+  prepTime?: string;
+  cookTime?: string;
+  servings?: number;
+  calories?: number;
+  photo?: string;
+  tags?: string[];
+  createdAt?: string;
+}
+
 export interface Exercise {
   name: string;
   sets?: string;
@@ -170,4 +186,15 @@ export interface CycleEntry {
   emotions?: string[];
   activities?: string[];
   updatedAt?: string;
+}
+
+export interface MoodEntry {
+  id: string;
+  uid: string;
+  mood: string;
+  intensity: number;
+  factors: string[];
+  note?: string;
+  date: string;
+  createdAt: string;
 }

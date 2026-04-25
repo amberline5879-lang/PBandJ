@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Heart, ChevronRight, Activity, Moon, Utensils, Droplets } from 'lucide-react';
+import { Heart, ChevronRight, Activity, Moon, Utensils, Droplets, Smile } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useTheme } from '../components/ThemeProvider';
@@ -43,6 +43,15 @@ const Health: React.FC = () => {
       path: '/health/activity',
       color: 'text-[#FBC02D]',
       bg: 'bg-[#FFF9C4]',
+      show: true
+    },
+    {
+      title: 'Mood & Energy',
+      description: 'Check in with your emotional well-being.',
+      icon: Smile,
+      path: '/health/mood',
+      color: 'text-lavender-foreground',
+      bg: 'bg-lavender',
       show: true
     }
   ].filter(c => c.show);

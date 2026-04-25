@@ -2,12 +2,55 @@ import React from 'react';
 import { useTheme } from '../components/ThemeProvider';
 import { useAuth } from '../components/AuthProvider';
 import { ThemeType, FontSizeType, FontType, ScheduleIntervalType } from '../types';
-import { Palette, Type, Layout, Shield, LogOut, Info, ChevronRight, Clock } from 'lucide-react';
+import { Palette, Type, Layout, Shield, LogOut, Info, ChevronRight, Clock, Database, Download, Upload, Trash2 } from 'lucide-react';
+import { storage } from '../lib/storage';
 import { cn } from '../lib/utils';
 
 const Settings: React.FC = () => {
   const { settings, updateSettings } = useTheme();
   const { signOut } = useAuth();
+
+  const handleExport = async () => {
+    try {
+      const data = await storage.exportAll();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `serene_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Failed to export data');
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        await storage.importAll(content);
+        alert('Data imported successfully! The app will refresh.');
+        window.location.reload();
+      } catch (error) {
+        alert('Failed to import data: ' + (error instanceof Error ? error.message : 'Invalid file'));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const clearAllData = async () => {
+    if (confirm('WARNING: This will permanently delete ALL your data (tasks, meals, journal, everything). This cannot be undone. Are you sure?')) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
 
   const themes: { id: ThemeType; label: string; color: string }[] = [
     { id: 'pastel', label: 'Pastel', color: 'bg-[#F4EBE2]' },
@@ -147,6 +190,53 @@ const Settings: React.FC = () => {
               <span>About Serene Structure</span>
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      </section>
+
+      {/* Data Management Section */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Database className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold tracking-tight">Data Management</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button 
+            onClick={handleExport}
+            className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-card border border-border shadow-sm hover:shadow-lg transition-all"
+          >
+            <div className="p-3 rounded-full bg-primary/10 text-primary">
+              <Download className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-widest">Backup</p>
+              <p className="text-[10px] text-muted-foreground">Download all data</p>
+            </div>
+          </button>
+
+          <label className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-card border border-border shadow-sm hover:shadow-lg transition-all cursor-pointer">
+            <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+            <div className="p-3 rounded-full bg-secondary/20 text-secondary-foreground">
+              <Upload className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-widest">Restore</p>
+              <p className="text-[10px] text-muted-foreground">Import from backup</p>
+            </div>
+          </label>
+
+          <button 
+            onClick={clearAllData}
+            className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-card border border-border shadow-sm hover:bg-destructive/5 hover:border-destructive/30 transition-all"
+          >
+            <div className="p-3 rounded-full bg-destructive/10 text-destructive">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-widest">Reset</p>
+              <p className="text-[10px] text-muted-foreground">Wipe all data</p>
+            </div>
           </button>
         </div>
       </section>

@@ -5,7 +5,7 @@ import { ChevronLeft, Plus, Search, HelpCircle, Edit3, CheckCircle2, ArrowRight,
 import { cn, compressImage } from '../lib/utils';
 import { useAuth } from '../components/AuthProvider';
 import { storage } from '../lib/storage';
-import { Meal } from '../types';
+import { Meal, Recipe } from '../types';
 
 const AddMeal: React.FC = () => {
   const navigate = useNavigate();
@@ -34,10 +34,12 @@ const AddMeal: React.FC = () => {
   
   // Recent Meals State
   const [recentMeals, setRecentMeals] = useState<Meal[]>([]);
+  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(false);
 
   useEffect(() => {
     fetchRecentMeals();
+    fetchSavedRecipes();
   }, []);
 
   const fetchRecentMeals = async () => {
@@ -49,6 +51,15 @@ const AddMeal: React.FC = () => {
       console.error('Error fetching recent meals:', error);
     } finally {
       setLoadingRecent(false);
+    }
+  };
+
+  const fetchSavedRecipes = async () => {
+    try {
+      const allRecipes = await storage.getAll<Recipe>(storage.key.RECIPES);
+      setSavedRecipes(allRecipes);
+    } catch (error) {
+      console.error('Error fetching saved recipes:', error);
     }
   };
 
@@ -204,19 +215,33 @@ const AddMeal: React.FC = () => {
           </button>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
-          {[
-            { id: '1', name: 'Quinoa Buddha Bowl', time: '15 min prep', img: 'https://picsum.photos/seed/quinoa/300/300', color: 'bg-moss/20 border-moss/30' },
-            { id: '2', name: 'Salmon Poke', time: 'No-cook', img: 'https://picsum.photos/seed/salmon/300/300', color: 'bg-rose/20 border-rose/30' },
-            { id: '3', name: 'Pesto Pasta', time: '12 min prep', img: 'https://picsum.photos/seed/pasta/300/300', color: 'bg-sky/20 border-sky/30' }
-          ].map((meal) => (
-            <div key={meal.id} className={cn("min-w-[160px] rounded-[2rem] overflow-hidden shadow-sm border transition-all hover:scale-105", meal.color)}>
-              <img src={meal.img} alt={meal.name} className="w-full h-32 object-cover" referrerPolicy="no-referrer" />
-              <div className="p-4 space-y-1">
-                <h4 className="text-xs font-bold text-foreground leading-tight">{meal.name}</h4>
-                <p className="text-[10px] text-muted-foreground">{meal.time}</p>
-              </div>
+          {savedRecipes.length > 0 ? (
+            savedRecipes.map((meal, idx) => (
+              <button 
+                key={meal.id} 
+                onClick={() => handleQuickAdd(meal as unknown as Meal)}
+                className={cn(
+                  "min-w-[160px] rounded-[2rem] overflow-hidden shadow-sm border transition-all hover:scale-105 text-left",
+                  idx % 3 === 0 ? "bg-moss/20 border-moss/30" : idx % 3 === 1 ? "bg-rose/20 border-rose/30" : "bg-sky/20 border-sky/30"
+                )}
+              >
+                <img 
+                  src={meal.photo || `https://picsum.photos/seed/${meal.name}/300/300`} 
+                  alt={meal.name} 
+                  className="w-full h-32 object-cover" 
+                  referrerPolicy="no-referrer" 
+                />
+                <div className="p-4 space-y-1">
+                  <h4 className="text-xs font-bold text-foreground leading-tight truncate">{meal.name}</h4>
+                  <p className="text-[10px] text-muted-foreground">{meal.prepTime || '15 min prep'}</p>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="flex-1 text-center py-6 border-2 border-dashed border-border rounded-3xl text-[10px] uppercase font-bold text-muted-foreground/40">
+              No saved recipes yet
             </div>
-          ))}
+          )}
         </div>
       </section>
 

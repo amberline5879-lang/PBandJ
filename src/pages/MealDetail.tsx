@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Clock, Flame, Info, Utensils, Heart, ShoppingBag, Plus } from 'lucide-react';
 import { storage } from '../lib/storage';
-import { Meal } from '../types';
+import { Meal, Recipe } from '../types';
 import { useAuth } from '../components/AuthProvider';
 import { cn } from '../lib/utils';
 
 const MealDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get('source');
+  
   const { user } = useAuth();
-  const [meal, setMeal] = useState<Meal | null>(null);
+  const [meal, setMeal] = useState<Meal | Recipe | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +23,17 @@ const MealDetail: React.FC = () => {
       if (!id) return;
       setLoading(true);
       try {
-        const item = await storage.getById<Meal>(storage.key.MEALS, id);
+        let item = null;
+        if (source === 'recipe') {
+          item = await storage.getById<Recipe>(storage.key.RECIPES, id);
+        } else {
+          item = await storage.getById<Meal>(storage.key.MEALS, id);
+          // Fallback check if not found in meals but might be in recipes
+          if (!item) {
+            item = await storage.getById<Recipe>(storage.key.RECIPES, id);
+          }
+        }
+        
         if (item) {
           setMeal(item);
         }
@@ -31,7 +45,7 @@ const MealDetail: React.FC = () => {
     };
 
     fetchMeal();
-  }, [id]);
+  }, [id, source]);
 
   if (loading) {
     return (
@@ -69,7 +83,9 @@ const MealDetail: React.FC = () => {
           referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 mb-2">{meal.type}</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 mb-2">
+            {'type' in meal ? meal.type : meal.category}
+          </span>
           <h2 className="text-3xl font-black text-white tracking-tighter">{meal.name}</h2>
         </div>
       </section>
@@ -83,7 +99,7 @@ const MealDetail: React.FC = () => {
         </div>
         <div className="flex-1 min-w-[120px] p-4 rounded-2xl bg-sky/10 border border-sky/20 flex flex-col items-center gap-1">
           <Heart className="w-4 h-4 text-sky" />
-          <span className="text-lg font-bold">{meal.protein || 0}g</span>
+          <span className="text-lg font-bold">{('protein' in meal ? meal.protein : 0) || 0}g</span>
           <span className="text-[8px] font-bold uppercase tracking-widest text-sky-foreground/60">Protein</span>
         </div>
         <div className="flex-1 min-w-[120px] p-4 rounded-2xl bg-lavender/10 border border-lavender/20 flex flex-col items-center gap-1">
@@ -127,13 +143,13 @@ const MealDetail: React.FC = () => {
             <h3 className="text-lg font-bold">Instructions</h3>
           </div>
           <div className="bg-card rounded-[2rem] p-6 border border-border shadow-sm">
-            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-              {meal.instructions || meal.recipe || 'No instructions provided.'}
+            <p className="whitespace-pre-wrap text-sm font-medium leading-relaxed text-muted-foreground">
+              {meal.instructions || ('recipe' in meal ? meal.recipe : '') || 'No instructions provided.'}
             </p>
           </div>
         </section>
 
-        {meal.link && (
+        {('link' in meal && meal.link) && (
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <Info className="w-5 h-5 text-primary" />

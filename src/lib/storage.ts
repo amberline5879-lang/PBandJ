@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   RECIPES: 'serene_recipes',
   LISTS: 'serene_lists',
   CYCLE_ENTRIES: 'serene_cycle_entries',
+  MOODS: 'serene_moods',
 };
 
 class StorageService {
@@ -81,6 +82,29 @@ class StorageService {
   async getById<T extends { id: string }>(key: string, id: string): Promise<T | null> {
     const items = this.get<T>(key);
     return items.find(item => item.id === id) || null;
+  }
+
+  // Data Management
+  async exportAll(): Promise<string> {
+    const allData: Record<string, any> = {};
+    Object.values(STORAGE_KEYS).forEach(key => {
+      allData[key] = this.get(key);
+    });
+    return JSON.stringify(allData, null, 2);
+  }
+
+  async importAll(jsonData: string): Promise<void> {
+    try {
+      const data = JSON.parse(jsonData);
+      Object.values(STORAGE_KEYS).forEach(key => {
+        if (Array.isArray(data[key])) {
+          this.set(key, data[key]);
+        }
+      });
+    } catch (e) {
+      console.error('Error importing data:', e);
+      throw new Error('Invalid backup file');
+    }
   }
 
   // Subscription-like helper
