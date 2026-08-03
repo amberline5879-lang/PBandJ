@@ -1,0 +1,295 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "A scheduled or pending user task or timeblock item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "type": { "type": "string" },
+        "time": { "type": "string" },
+        "duration": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "title"]
+    },
+    "Routine": {
+      "title": "Routine",
+      "description": "User custom routine configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "duration": { "type": "string" },
+        "steps": { "type": "array" }
+      },
+      "required": ["uid", "title"]
+    },
+    "Challenge": {
+      "title": "Challenge",
+      "description": "Pre-defined health/mindfulness challenges",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "durationDays": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "required": ["title", "category"]
+    },
+    "ActiveChallenge": {
+      "title": "ActiveChallenge",
+      "description": "A challenge active for a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "challengeId": { "type": "string" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "completedDays": { "type": "array" }
+      },
+      "required": ["uid", "challengeId"]
+    },
+    "Meal": {
+      "title": "Meal",
+      "description": "A customized or pre-planned meal item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string" },
+        "recipe": { "type": "string" }
+      },
+      "required": ["uid", "name", "date", "type"]
+    },
+    "Workout": {
+      "title": "Workout",
+      "description": "A planned workout routine for a given date",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string" },
+        "duration": { "type": "string" }
+      },
+      "required": ["uid", "name", "date", "type"]
+    },
+    "SleepLog": {
+      "title": "SleepLog",
+      "description": "Daily logged sleep habits and scores",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "hours": { "type": "number" },
+        "quality": { "type": "number" }
+      },
+      "required": ["uid", "date", "hours", "quality"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "User exercise indices tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "steps": { "type": "number" },
+        "calories": { "type": "number" }
+      },
+      "required": ["uid", "date"]
+    },
+    "JournalBook": {
+      "title": "JournalBook",
+      "description": "An entity representing a curated physical-styled journal cover",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "coverColor": { "type": "string" },
+        "coverIcon": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "coverColor", "coverIcon"]
+    },
+    "JournalEntry": {
+      "title": "JournalEntry",
+      "description": "An entry inside a specified Journal Book or a General Brain Dump",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "journalId": { "type": "string" },
+        "type": { "type": "string" },
+        "content": { "type": "string" },
+        "prompt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "content", "createdAt"]
+    },
+    "List": {
+      "title": "List",
+      "description": "A checklist item structure",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "items": { "type": "array" }
+      },
+      "required": ["uid", "title"]
+    },
+    "CycleEntry": {
+      "title": "CycleEntry",
+      "description": "Monthly period indices tracking details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "flow": { "type": "string" }
+      },
+      "required": ["uid", "date"]
+    },
+    "MoodEntry": {
+      "title": "MoodEntry",
+      "description": "Index representing psychological state logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "moodId": { "type": "string" },
+        "moodIds": { "type": "array" },
+        "intensity": { "type": "number" },
+        "energy": { "type": "number" },
+        "factors": { "type": "array" },
+        "note": { "type": "string" }
+      },
+      "required": ["uid", "date", "moodId"]
+    },
+    "Recipe": {
+      "title": "Recipe",
+      "description": "Custom ingredient recipe designed by user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "ingredients": { "type": "array" },
+        "instructions": { "type": "string" },
+        "prepTime": { "type": "string" },
+        "cookTime": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "photo": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["uid", "name"]
+    },
+    "ShoppingItem": {
+      "title": "ShoppingItem",
+      "description": "Grocery shopping checklist task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "quantity": { "type": "string" }
+      },
+      "required": ["uid", "name", "completed"]
+    },
+    "HydrationLog": {
+      "title": "HydrationLog",
+      "description": "Water and beverage intake logger",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "amount": { "type": "number" }
+      },
+      "required": ["uid", "date", "amount"]
+    }
+  },
+  "firestore": {
+    "/serene_tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Tasks and schedule items"
+    },
+    "/serene_routines/{routineId}": {
+      "schema": "Routine",
+      "description": "User preset routines"
+    },
+    "/serene_challenges/{challengeId}": {
+      "schema": "Challenge",
+      "description": "Static standard challenges metadata"
+    },
+    "/serene_active_challenges/{activeChallengeId}": {
+      "schema": "ActiveChallenge",
+      "description": "Active participant challenge trackers"
+    },
+    "/serene_meals/{mealId}": {
+      "schema": "Meal",
+      "description": "Planned user nutrition logs"
+    },
+    "/serene_workouts/{workoutId}": {
+      "schema": "Workout",
+      "description": "Planned user gym workouts logs"
+    },
+    "/serene_sleep_logs/{sleepLogId}": {
+      "schema": "SleepLog",
+      "description": "Sleep hours tracking logs"
+    },
+    "/serene_activity_logs/{activityLogId}": {
+      "schema": "ActivityLog",
+      "description": "Step counters and calories metrics logs"
+    },
+    "/serene_journals/{journalId}": {
+      "schema": "JournalBook",
+      "description": "A custom physical book containing daily reflection letters"
+    },
+    "/serene_journal_entries/{entryId}": {
+      "schema": "JournalEntry",
+      "description": "Written entries logged into a specific book cover or a free brain dump list"
+    },
+    "/serene_lists/{listId}": {
+      "schema": "List",
+      "description": "Active checklist boards"
+    },
+    "/serene_cycle_entries/{cycleEntryId}": {
+      "schema": "CycleEntry",
+      "description": "Period cycle tracking logs"
+    },
+    "/serene_mood_entries/{moodEntryId}": {
+      "schema": "MoodEntry",
+      "description": "Psychological health tracking indices"
+    },
+    "/serene_recipes/{recipeId}": {
+      "schema": "Recipe",
+      "description": "Custom healthy meals and preparation workflows"
+    },
+    "/serene_shopping_list/{itemId}": {
+      "schema": "ShoppingItem",
+      "description": "Grocery logs and interactive checkout list elements"
+    },
+    "/serene_hydration/{logId}": {
+      "schema": "HydrationLog",
+      "description": "Water logged volumes and hydration levels index"
+    }
+  }
+}
