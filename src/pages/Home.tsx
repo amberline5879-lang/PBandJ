@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Circle, Plus, Clock, Flame, ChevronRight, Heart, Trash2, Palette, ListTodo, Sparkles } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Clock, Flame, ChevronRight, Heart, Trash2, Palette, ListTodo, Sparkles, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Task, Challenge, Meal } from '../types';
 import { CHALLENGES } from '../constants';
@@ -10,6 +10,7 @@ import { useTheme } from '../components/ThemeProvider';
 import { storage } from '../lib/storage';
 import TaskEditModal from '../components/TaskEditModal';
 import { isSameDay, startOfToday } from 'date-fns';
+import { fetchGoogleCalendarEvents, GoogleCalendarEvent } from '../lib/calendar';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ const Home: React.FC = () => {
   const scheduleRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef<boolean>(false);
 
-  // Google Calendar Integration states is disabled
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  // Google Calendar Integration states
+  const [calendarEvents, setCalendarEvents] = useState<GoogleCalendarEvent[]>([]);
   const [fetchingEvents, setFetchingEvents] = useState(false);
   const [showGCalToday, setShowGCalToday] = useState(false);
 
@@ -67,12 +68,51 @@ const Home: React.FC = () => {
     return Math.max(15, diffMin);
   };
 
+  // Fetch Google Calendar events for today
+  const loadCalendarEvents = async () => {
+    if (!accessToken) return;
+    setFetchingEvents(true);
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+      const events = await fetchGoogleCalendarEvents(accessToken, start, end);
+      setCalendarEvents(events);
+    } catch (err) {
+      console.error('Error fetching Google Calendar events on Home page:', err);
+    } finally {
+      setFetchingEvents(false);
+    }
+  };
+
+  useEffect(() => {
+    if (accessToken) {
+      loadCalendarEvents();
+    }
+  }, [accessToken]);
+
   const scheduleTasks = tasks
     .filter(t => t.type === 'timeblock')
     .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
-  // Google Calendar Integration disabled
-  const mergedScheduleTasks = [...scheduleTasks].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  // Merge local timeblocks with Google Calendar events
+  const googleScheduleBlocks = calendarEvents.map(event => ({
+    id: `gcal-${event.id}`,
+    gcalId: event.id,
+    title: event.summary || '(No Title)',
+    description: event.description || '',
+    completed: false,
+    time: formatGCalTime(event.start?.dateTime || event.start?.date),
+    duration: getEventDuration(event.start?.dateTime, event.end?.dateTime),
+    color: '#4F46E5', // Indigo for Google Calendar
+    isGoogleCalendar: true,
+    htmlLink: event.htmlLink,
+  }));
+
+  const mergedScheduleTasks = [...scheduleTasks, ...googleScheduleBlocks].sort(
+    (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
+  );
 
   useEffect(() => {
     const unsubTasks = storage.subscribe(storage.key.TASKS, (data) => {
@@ -332,17 +372,42 @@ const Home: React.FC = () => {
 
       {/* Your Schedule Section */}
       <section className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-secondary" />
             <h2 className="text-lg font-semibold tracking-tight text-primary">Your Schedule</h2>
           </div>
-          <button 
-            onClick={addTimeblock}
-            className="p-2 rounded-full bg-secondary text-secondary-foreground hover:opacity-90 transition-all shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {accessToken ? (
+              <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-full text-[10px] font-bold">
+                <CalendarIcon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>Google Calendar</span>
+                <button
+                  onClick={loadCalendarEvents}
+                  disabled={fetchingEvents}
+                  className="p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-full transition-colors ml-1"
+                  title="Refresh Google Calendar"
+                >
+                  <RefreshCw className={cn("w-3 h-3 text-indigo-600 dark:text-indigo-400", fetchingEvents && "animate-spin")} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => googleSignIn()}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all shadow-sm"
+              >
+                <CalendarIcon className="w-3.5 h-3.5" />
+                <span>Sync Google Calendar</span>
+              </button>
+            )}
+            <button 
+              onClick={addTimeblock}
+              className="p-2 rounded-full bg-secondary text-secondary-foreground hover:opacity-90 transition-all shadow-sm"
+              title="Add Timeblock"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div 
